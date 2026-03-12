@@ -3,83 +3,75 @@
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #eef2f3; color: #333; }
-    .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #2c3e50; border-bottom: 3px solid #27ae60; padding-bottom: 10px; margin-bottom: 25px; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 15px; background: #f4f7f6; color: #333; }
+    .container { max-width: 1000px; margin: auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+    h2 { text-align: center; color: #2c3e50; border-bottom: 4px solid #27ae60; padding-bottom: 15px; }
     
-    .form-group { margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
-    label { font-weight: bold; width: 100px; }
-    select, input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+    .header-section { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 10px; }
+    .header-field { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 5px; }
+    .header-field label { font-weight: bold; font-size: 14px; }
+    
+    select, input[type="text"] { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; outline: none; transition: border 0.3s; }
+    select:focus, input:focus { border-color: #27ae60; }
 
-    /* Card Container */
-    .card { background: #fff; border: 1px solid #e0e6ed; border-radius: 10px; padding: 20px; margin-bottom: 20px; position: relative; }
-    .card-title { color: #27ae60; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
-    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    .field-group { display: flex; flex-direction: column; }
-    .field-group label { width: 100%; font-size: 13px; margin-bottom: 5px; color: #666; }
+    /* Fluid Card Layout */
+    .card { background: #fff; border: 1px solid #eef0f2; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .card-title { color: #27ae60; font-weight: bold; font-size: 1.1em; margin-bottom: 20px; border-left: 5px solid #27ae60; padding-left: 10px; }
     
-    .btn-submit { background: #27ae60; color: white; padding: 15px; border: none; cursor: pointer; width: 100%; border-radius: 8px; font-size: 18px; font-weight: bold; margin-top: 20px; }
-    .btn-submit:disabled { background: #95a5a6; cursor: wait; }
-    .btn-add { background: #3498db; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 6px; margin-bottom: 20px; }
+    /* THE FLUID GRID: minmax ensures 1 column on phone, 2-3 on laptop */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
     
-    /* Notification Banners */
+    .field-group { display: flex; flex-direction: column; gap: 5px; }
+    .field-group label { font-size: 13px; color: #7f8c8d; font-weight: 600; }
+    
+    .btn-submit { background: #27ae60; color: white; padding: 18px; border: none; cursor: pointer; width: 100%; border-radius: 10px; font-size: 18px; font-weight: bold; margin-top: 20px; transition: 0.3s; }
+    .btn-submit:hover { background: #219150; }
+    .btn-submit:disabled { background: #bdc3c7; cursor: not-allowed; }
+    .btn-add { background: #3498db; color: white; padding: 12px 25px; border: none; cursor: pointer; border-radius: 8px; margin-bottom: 20px; font-weight: bold; }
+    
     .banner { display: none; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; }
     .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
     .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     
     .hidden { display: none; }
-    @media (max-width: 600px) { .card-grid { grid-template-columns: 1fr; } .form-group { flex-direction: column; align-items: flex-start; } }
   </style>
 </head>
 <body>
 
 <div class="container">
   <h2>USULAN RKAS 2027</h2>
-  
   <div id="statusBanner" class="banner"></div>
 
-  <div class="form-group">
-    <label>NAMA:</label>
-    <input type="text" id="teacherName" placeholder="Masukkan nama lengkap">
-  </div>
-
-  <div class="form-group">
-    <label>JABATAN:</label>
-    <select id="jabatan" onchange="toggleMapel()">
-      <option value="">-- Pilih --</option>
-      <option value="Guru">Guru</option>
-      <option value="Tendik">Tendik</option>
-    </select>
-  </div>
-
-  <div id="mapelContainer" class="form-group hidden">
-    <label>MAPEL:</label>
-    <select id="mapel">
-      <option value="">-- Pilih Mata Pelajaran --</option>
-      <option>Bahasa Indonesia</option>
-      <option>Bahasa Inggris</option>
-      <option>Bimbingan Konseling</option>
-      <option>Ilmu Pengetahuan Alam</option>
-      <option>Ilmu Pengetahuan Sosial</option>
-      <option>Informatika</option>
-      <option>Matematika</option>
-      <option>Pendidikan Agama Islam</option>
-      <option>Pendidikan Agama Kristen</option>
-      <option>Pendidikan Jasmani, Olahraga, dan Kesehatan</option>
-      <option>Pendidikan Pancasila</option>
-      <option>Seni Budaya</option>
-    </select>
+  <div class="header-section">
+    <div class="header-field">
+      <label>NAMA:</label>
+      <input type="text" id="teacherName" placeholder="Nama Lengkap">
+    </div>
+    <div class="header-field">
+      <label>JABATAN:</label>
+      <select id="jabatan" onchange="toggleMapel()">
+        <option value="">-- Pilih --</option>
+        <option value="Guru">Guru</option>
+        <option value="Tendik">Tendik</option>
+      </select>
+    </div>
+    <div id="mapelContainer" class="header-field hidden">
+      <label>MAPEL:</label>
+      <select id="mapel">
+        <option value="">-- Pilih Mapel --</option>
+        <option>Pendidikan Agama Islam</option><option>Bahasa Indonesia</option>
+        <option>Matematika</option><option>IPA</option><option>IPS</option>
+        <option>Bahasa Inggris</option><option>PJOK</option><option>Informatika</option>
+      </select>
+    </div>
   </div>
 
   <div id="cardContainer"></div>
-  
   <button class="btn-add" onclick="createCard()">+ Tambah Barang</button>
-
   <button class="btn-submit" id="submitBtn" onclick="processSubmission()">SUBMIT USULAN</button>
 </div>
 
 <script>
-  // PASTE YOUR NEW WEB APP URL HERE
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5vWJ9Drv714IKH8ERlj02k96KMNZCJwmrZV32wi6erebueAJQAKRLd5M_pBVI_GlWAw/exec";
   let itemCount = 0;
 
@@ -89,21 +81,18 @@
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-      <div class="card-title">Barang #${itemCount}</div>
+      <div class="card-title">DATA BARANG #${itemCount}</div>
       <div class="card-grid">
-        <div class="field-group"><label>NAMA BARANG</label><input type="text" class="itemName" placeholder="Masukkan nama barang"></div>
-        <div class="field-group"><label>SPESIFIKASI</label><input type="text" class="spec" placeholder="Detail jenis, merk, ukuran, dll"></div>
-        <div class="field-group"><label>KEPERLUAN</label><input type="text" class="purpose" placeholder="Tujuan penggunaan"></div>
-        <div class="field-group"><label>CATATAN</label><input type="text" class="notes" placeholder="Catatan tambahan"></div>
-        <div class="field-group" style="grid-column: span 2;">
-          <label>FOTO (OPTIONAL)</label><input type="file" class="imageFile" accept="image/*">
-        </div>
+        <div class="field-group"><label>NAMA BARANG</label><input type="text" class="itemName"></div>
+        <div class="field-group"><label>SPESIFIKASI</label><input type="text" class="spec"></div>
+        <div class="field-group"><label>KEPERLUAN</label><input type="text" class="purpose"></div>
+        <div class="field-group"><label>CATATAN</label><input type="text" class="notes"></div>
+        <div class="field-group"><label>FOTO (OPTIONAL)</label><input type="file" class="imageFile" accept="image/*"></div>
       </div>
     `;
     container.appendChild(card);
   }
 
-  // Generate 5 initial cards as per the PDF [cite: 5, 13, 21, 26, 36]
   for(let i=0; i<5; i++) createCard();
 
   function toggleMapel() {
@@ -144,7 +133,7 @@
     const payload = [];
 
     btn.disabled = true;
-    btn.innerText = "Sabar, sedang mengirim...";
+    btn.innerText = "Mengirim Data...";
 
     try {
       for(let card of cards) {
@@ -169,20 +158,11 @@
       const body = new URLSearchParams();
       body.append('teacherName', name);
       body.append('jabatan', jab);
-      body.append('mapel', document.getElementById('mapel').value);
+      body.append('mapel', (jab === 'Guru') ? document.getElementById('mapel').value : "-");
       body.append('tableData', JSON.stringify(payload));
 
-      // Use a standard fetch. To get a response, we cannot use no-cors if we want validation.
-      // However, Google Apps Script redirects. The 'SUCCESS_SAVED' check only works in proper CORS.
-      // We will use the redirect-check method.
-      const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors', // Github -> Google usually requires no-cors to avoid preflight issues
-        body: body
-      });
+      await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: body });
 
-      // Since 'no-cors' doesn't let us read the body, we'll assume success if the fetch completes.
-      // To strictly verify, you'd need a proxy, but this is the most stable version for now.
       showBanner("Usulan Berhasil Dikirim!", "success");
       setTimeout(() => location.reload(), 3000);
 
@@ -195,12 +175,9 @@
 
   function showBanner(msg, type) {
     const b = document.getElementById('statusBanner');
-    b.innerText = msg;
-    b.className = `banner ${type}`;
-    b.style.display = "block";
-    window.scrollTo(0,0);
+    b.innerText = msg; b.className = `banner ${type}`; b.style.display = "block";
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 </script>
-
 </body>
 </html>
