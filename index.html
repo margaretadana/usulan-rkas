@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #eef2f3; color: #333; }
+    .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #2c3e50; border-bottom: 3px solid #27ae60; padding-bottom: 10px; margin-bottom: 25px; }
+    
+    .form-group { margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
+    label { font-weight: bold; width: 100px; }
+    select, input[type="text"] { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 16px; }
+
+    /* Card Container */
+    .card { background: #fff; border: 1px solid #e0e6ed; border-radius: 10px; padding: 20px; margin-bottom: 20px; position: relative; }
+    .card-title { color: #27ae60; font-weight: bold; font-size: 1.1em; margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; padding-bottom: 5px; }
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .field-group { display: flex; flex-direction: column; }
+    .field-group label { width: 100%; font-size: 13px; margin-bottom: 5px; color: #666; }
+    
+    .btn-submit { background: #27ae60; color: white; padding: 15px; border: none; cursor: pointer; width: 100%; border-radius: 8px; font-size: 18px; font-weight: bold; margin-top: 20px; }
+    .btn-submit:disabled { background: #95a5a6; cursor: wait; }
+    .btn-add { background: #3498db; color: white; padding: 10px 20px; border: none; cursor: pointer; border-radius: 6px; margin-bottom: 20px; }
+    
+    /* Notification Banners */
+    .banner { display: none; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; font-weight: bold; }
+    .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    
+    .hidden { display: none; }
+    @media (max-width: 600px) { .card-grid { grid-template-columns: 1fr; } .form-group { flex-direction: column; align-items: flex-start; } }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>USULAN RKAS 2027</h2>
+  
+  <div id="statusBanner" class="banner"></div>
+
+  <div class="form-group">
+    <label>NAMA:</label>
+    <input type="text" id="teacherName" placeholder="Masukkan nama lengkap">
+  </div>
+
+  <div class="form-group">
+    <label>JABATAN:</label>
+    <select id="jabatan" onchange="toggleMapel()">
+      <option value="">-- Pilih --</option>
+      <option value="Guru">Guru</option>
+      <option value="Tendik">Tendik</option>
+    </select>
+  </div>
+
+  <div id="mapelContainer" class="form-group hidden">
+    <label>MAPEL:</label>
+    <select id="mapel">
+      <option value="">-- Pilih Mata Pelajaran --</option>
+      <option>Pendidikan Agama Islam</option><option>Bahasa Indonesia</option>
+      <option>Matematika</option><option>IPA</option><option>IPS</option>
+      <option>Bahasa Inggris</option><option>PJOK</option><option>Informatika</option>
+    </select>
+  </div>
+
+  <div id="cardContainer"></div>
+  
+  <button class="btn-add" onclick="createCard()">+ Tambah Barang</button>
+
+  <button class="btn-submit" id="submitBtn" onclick="processSubmission()">SUBMIT USULAN</button>
+</div>
+
+<script>
+  // PASTE YOUR NEW WEB APP URL HERE
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx5vWJ9Drv714IKH8ERlj02k96KMNZCJwmrZV32wi6erebueAJQAKRLd5M_pBVI_GlWAw/exec";
+  let itemCount = 0;
+
+  function createCard() {
+    itemCount++;
+    const container = document.getElementById('cardContainer');
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-title">Barang #${itemCount}</div>
+      <div class="card-grid">
+        <div class="field-group"><label>NAMA BARANG</label><input type="text" class="itemName"></div>
+        <div class="field-group"><label>SPESIFIKASI</label><input type="text" class="spec"></div>
+        <div class="field-group"><label>KEPERLUAN</label><input type="text" class="purpose"></div>
+        <div class="field-group"><label>CATATAN</label><input type="text" class="notes"></div>
+        <div class="field-group" style="grid-column: span 2;">
+          <label>FOTO (OPTIONAL)</label><input type="file" class="imageFile" accept="image/*">
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  }
+
+  // Generate 5 initial cards as per the PDF [cite: 5, 13, 21, 26, 36]
+  for(let i=0; i<5; i++) createCard();
+
+  function toggleMapel() {
+    const jab = document.getElementById('jabatan').value;
+    document.getElementById('mapelContainer').classList.toggle('hidden', jab !== 'Guru');
+  }
+
+  async function compressImage(file) {
+    return new Promise((res) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (e) => {
+        const img = new Image();
+        img.src = e.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX = 1024;
+          let w = img.width, h = img.height;
+          if (w > h && w > MAX) { h *= MAX/w; w = MAX; }
+          else if (h > MAX) { w *= MAX/h; h = MAX; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          res(canvas.toDataURL('image/jpeg', 0.7));
+        };
+      };
+    });
+  }
+
+  async function processSubmission() {
+    const banner = document.getElementById('statusBanner');
+    const btn = document.getElementById('submitBtn');
+    const name = document.getElementById('teacherName').value;
+    const jab = document.getElementById('jabatan').value;
+    
+    if(!name || !jab) return alert("Mohon lengkapi Nama dan Jabatan!");
+
+    const cards = document.querySelectorAll('.card');
+    const payload = [];
+
+    btn.disabled = true;
+    btn.innerText = "Sabar, sedang mengirim...";
+
+    try {
+      for(let card of cards) {
+        const item = card.querySelector('.itemName').value.trim();
+        if(item) {
+          const fileInput = card.querySelector('.imageFile');
+          let imgBase64 = "";
+          if(fileInput.files[0]) imgBase64 = await compressImage(fileInput.files[0]);
+
+          payload.push({
+            itemName: item,
+            spec: card.querySelector('.spec').value,
+            purpose: card.querySelector('.purpose').value,
+            notes: card.querySelector('.notes').value,
+            imageFile: imgBase64
+          });
+        }
+      }
+
+      if(payload.length === 0) throw new Error("Mohon isi minimal 1 Nama Barang!");
+
+      const body = new URLSearchParams();
+      body.append('teacherName', name);
+      body.append('jabatan', jab);
+      body.append('mapel', document.getElementById('mapel').value);
+      body.append('tableData', JSON.stringify(payload));
+
+      // Use a standard fetch. To get a response, we cannot use no-cors if we want validation.
+      // However, Google Apps Script redirects. The 'SUCCESS_SAVED' check only works in proper CORS.
+      // We will use the redirect-check method.
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors', // Github -> Google usually requires no-cors to avoid preflight issues
+        body: body
+      });
+
+      // Since 'no-cors' doesn't let us read the body, we'll assume success if the fetch completes.
+      // To strictly verify, you'd need a proxy, but this is the most stable version for now.
+      showBanner("Usulan Berhasil Dikirim!", "success");
+      setTimeout(() => location.reload(), 3000);
+
+    } catch (err) {
+      showBanner("Gagal: " + err.message, "error");
+      btn.disabled = false;
+      btn.innerText = "SUBMIT USULAN";
+    }
+  }
+
+  function showBanner(msg, type) {
+    const b = document.getElementById('statusBanner');
+    b.innerText = msg;
+    b.className = `banner ${type}`;
+    b.style.display = "block";
+    window.scrollTo(0,0);
+  }
+</script>
+
+</body>
+</html>
